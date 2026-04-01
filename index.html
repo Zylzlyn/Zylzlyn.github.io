@@ -935,6 +935,154 @@
             0%, 50% { opacity: 1; }
             51%, 100% { opacity: 0; }
         }
+
+        /* =============================================
+           交互式发送按钮样式
+           ============================================= */
+        .interactive-send-btn {
+            position: relative;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--rose-quartz), var(--serenity));
+            border: none;
+            cursor: pointer;
+            font-size: 1.3em;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(146, 168, 209, 0.3);
+        }
+
+        .interactive-send-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 25px rgba(146, 168, 209, 0.5);
+        }
+
+        .interactive-send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .interactive-send-btn:focus {
+            outline: 2px solid var(--serenity);
+            outline-offset: 3px;
+        }
+
+        /* =============================================
+           通用交互式按钮样式
+           ============================================= */
+        .interactive-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .interactive-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.4),
+                transparent
+            );
+            animation: glowSlide 2s infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .interactive-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(
+                ellipse at top left,
+                rgba(247, 202, 201, 0.5) 0%,
+                transparent 50%
+            ),
+            radial-gradient(
+                ellipse at bottom right,
+                rgba(146, 168, 209, 0.5) 0%,
+                transparent 50%
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .interactive-btn .top-line {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--rose-quartz), var(--serenity));
+            transition: width 0.3s ease;
+            border-radius: 1px;
+            z-index: 3;
+        }
+
+        .interactive-btn .btn-content {
+            position: relative;
+            z-index: 4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .interactive-btn:hover .top-line {
+            width: 60%;
+        }
+
+        .interactive-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(146, 168, 209, 0.4);
+        }
+
+        .interactive-btn.interactive-send-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 25px rgba(146, 168, 209, 0.5);
+        }
+
+        .interactive-btn:active {
+            transform: translateY(0);
+        }
+
+        .interactive-btn.interactive-send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .interactive-btn:focus {
+            outline: 2px solid var(--serenity);
+            outline-offset: 3px;
+        }
+
+        /* 模态框按钮圆角 */
+        .interactive-btn.modal-btn::after {
+            border-radius: 30px;
+        }
+
+        /* 简历按钮圆角 */
+        .interactive-btn.nav-resume-btn::after {
+            border-radius: 20px;
+        }
+
+        /* 发送按钮保持圆形 */
+        .interactive-send-btn::after {
+            border-radius: 50%;
+        }
+
+        @keyframes glowSlide {
+            0% { left: -100%; }
+            50%, 100% { left: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -970,15 +1118,18 @@
                 点击按钮，You can Ask Me Anything.
             </p>
             
-            <!-- 交互式调用按钮 - 使用Tailwind样式 -->
+            <!-- 交互式调用按钮 -->
             <button 
                 id="generateBtn"
                 onclick="handleGenerateClick()"
-                class="modal-btn"
+                class="modal-btn interactive-btn"
                 tabindex="0"
             >
-                <span id="starIcon" class="star-icon mr-2">⭐</span>
-                <span id="buttonText"></span>
+                <span class="top-line"></span>
+                <span class="btn-content">
+                    <span id="starIcon" class="star-icon mr-2">⭐</span>
+                    <span id="buttonText"></span>
+                </span>
             </button>
         </div>
     </div>
@@ -1006,8 +1157,9 @@
                     <span class="nav-tag">F1内容创作者</span>
                 </div>
             </div>
-            <button class="nav-resume-btn" onclick="generateResumeSummary()" tabindex="0">
-                📄 一键生成完整简历
+            <button class="nav-resume-btn interactive-btn" onclick="generateResumeSummary()" tabindex="0">
+                <span class="top-line"></span>
+                <span class="btn-content"></span>📄 一键生成完整简历</span>
             </button>
         </nav>
 
@@ -1117,8 +1269,9 @@
                     rows="1"
                     tabindex="0"
                 ></textarea>
-                <button id="sendBtn" class="send-btn" onclick="sendMessage()" tabindex="0">
-                    ➤
+                <button id="sendBtn" class="interactive-send-btn interactive-btn" onclick="sendMessage()" tabindex="0">
+                    <span class="top-line"></span>
+                    <span class="btn-content"></span>➤</span>
                 </button>
             </div>
         </div>
