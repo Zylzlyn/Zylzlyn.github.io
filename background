@@ -2,7 +2,7 @@ Background video
 element <video> fullscreen absolute
 attrs autoPlay loop muted playsInline
 style inset-0 w-full h-full object-cover z-0
-src d8jontlcm91z4.cloudfront.net /.c7218672.mp4
+src d8j0ntlcm91z4.cloudfront.net /...c7218672.mp4
 
 Typography
 import Instrument Serif . Inter
