@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>粒子星球 | Particle Planet</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- MediaPipe (常规 <script> 引入，暴露全局变量) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js"></script>
+</head>
+<body>
+  <video id="webcam" playsinline style="display:none;"></video>
+  <canvas id="canvas"></canvas>
+  
+  <div id="ui">
+    <div id="status">欢迎来到我的CARAT Land～伸出你的手掌吧</div>
+    <div id="instructions">
+      <p>🔄 旋转手掌 → 环绕星球</p>
+      <p>✊ 握拳 + 远离 → 拉远镜头 (先慢后快)</p>
+      <p>🖐 张手 + 靠近 → 推进镜头 (先快后慢)</p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

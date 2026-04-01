@@ -1,0 +1,41 @@
+Background video
+element <video> fullscreen absolute
+attrs autoPlay loop muted playsInline
+style inset-0 w-full h-full object-cover z-0
+src d8jontlcm91z4.cloudfront.net /.c7218672.mp4
+
+Typography
+import Instrument Serif . Inter
+headings 'Instrument Serif', serif 
+body Inter, sans-serif
+color all white throughout
+
+Navbar
+layout flex justify-between · px-8 py-6 ·max-w-7xl mx-auto · 2-10
+left "Velorah@" – text-3xl Instrument Serif ·@ in <sup class="text-xS">
+center hidden md:flex · Home · Studio · About · Journal · Reach Us · gap-10 text-sm hover:opacity-80
+right "Begin Journey" . liquid-glass · rounded-full px-6 py-2.5 text-sm · hover:scale-[1.03]
+
+Hero content
+layout flex-col items-center justify-center text-center · px-6 pt-32 pb-40·2-10
+hl "Focus in a Distracted World" . text-5xl-8xl·leading-[0.95]·tracking-[-2.46px] ·max-w-7xl ·animate-fade-rise
+p "We're designing tools for." .text-base-lg ㆍmax-w-2xl mt-&.leading-relaxed ㆍanimate-fade-rise-delay
+cta "Begin Journey"· liquid-glass · rounded-full px-14 py-5·mt-12·hover:scale-[1.03]·animate-fade-rise-delay-2
+
+Liquid glass CSS
+liquid-glass {
+background:rgba(255, 255, 255,0.01)
+backdrop-filter: blur(4px)
+box-shadow: inset θ 1px Ipx rgba(255, 255, 255, 0.1)
+.liquid-glass::before (
+padding：1.4px I barger gradzent
+background:linear-gradient(180deg, -)
+mask-composite: exclude
+
+Animations
+@keyframes fade-rise (
+from f opacity:0; translater(24px) 7
+to f opacity:1; translateY(0) 7
+animate-fade- rise 0.8s ease-out
+.animate-fade-rise-delay 0.8s ease-out 0.2s
+.animate-fade-rise.delay-20.8s ease-out 0.4s

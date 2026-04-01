@@ -1,0 +1,2352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- MediaPipe -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js"></script>
+    <title>丘子淇 - Ask Me Anything</title>
+    <style>
+        /* =============================================
+           【配置区域】配色方案 - SEVENTEEN 官方应援色
+           ============================================= */
+        :root {
+            --rose-quartz: #F7CAC9;
+            --serenity: #92A8D1;
+            --white: #FFFFFF;
+            --dark-gray: #333333;
+            --light-gray: #666666;
+            --light-bg: #F5F5F5;
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--white);
+            min-height: 100vh;
+            color: var(--dark-gray);
+            line-height: 1.6;
+        }
+
+        /* =============================================
+           初始页面样式
+           ============================================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--rose-quartz) 0%, var(--serenity) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .modal {
+            background: var(--white);
+            padding: 50px 40px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 20px 60px var(--shadow);
+            animation: popIn 0.5s ease;
+        }
+
+        .modal h1 {
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--rose-quartz), var(--serenity));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        .modal p {
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: var(--dark-gray);
+            font-size: 1em;
+        }
+
+        .modal-btn {
+            background: linear-gradient(135deg, var(--rose-quartz), var(--serenity));
+            color: var(--white);
+            border: none;
+            padding: 14px 48px;
+            font-size: 1.05em;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(146, 168, 209, 0.4);
+        }
+
+        .modal-btn:focus {
+            outline: 2px solid var(--serenity);
+            outline-offset: 3px;
+        }
+
+        /* =============================================
+           顶部导航区 - 固定
+           ============================================= */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: var(--white);
+            padding: 16px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+            box-shadow: 0 2px 20px var(--shadow);
+            border-bottom: 1px solid var(--light-bg);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--rose-quartz), var(--serenity));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3em;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-avatar:hover {
+            transform: scale(1.08);
+        }
+
+        .nav-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tag {
+            background: var(--light-bg);
+            color: var(--light-gray);
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.8em;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .nav-tag:hover {
+            background: var(--rose-quartz);
+            color: var(--white);
+        }
+
+        .nav-resume-btn {
+            background: linear-gradient(135deg, var(--rose-quartz), var(--serenity));
+            color: var(--white);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-resume-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(146, 168, 209, 0.35);
+        }
+
+        .nav-resume-btn:focus {
+            outline: 2px solid var(--serenity);
+            outline-offset: 2px;
+        }
+
+        /* =============================================
+           主容器
+           ============================================= */
+        .main-container {
+            padding-top: 80px;
+            min-height: 100vh;
+        }
+
+        /* =============================================
+           首屏引导区
+           ============================================= */
+        .hero-section {
+            padding: 60px 40px 40px;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero-title {
+            font-size: 3em;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--rose-quartz), var(--serenity));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        .hero-bio {
+            font-size: 1.1em;
+            color: var(--light-gray);
+            line-height: 1.8;
+            margin-bottom: 32px;
+            animation: fadeInUp 0.6s ease 0.1s both;
+        }
+
+        .quick-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            animation: fadeInUp 0.6s ease 0.2s both;
+        }
+
+        .quick-btn {
+            background: var(--white);
+            color: var(--dark-gray);
+            border: 1.5px solid var(--light-bg);
+            padding: 10px 20px;
+            border-radius: 22px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quick-btn:hover {
+            background: linear-gradient(135deg, var(--rose-quartz), var(--serenity));
+            color: var(--white);
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(146, 168, 209, 0.3);
+        }
+
+        .quick-btn .btn-arrow {
+            transition: transform 0.3s ease;
+            opacity: 0;
+        }
+
+        .quick-btn:hover .btn-arrow {
+            transform: translateX(4px);
+            opacity: 1;
+        }
+
+        .quick-btn:focus {
+            outline: 2px solid var(--serenity);
+            outline-offset: 2px;
+        }
+
+        /* =============================================
+           核心对话区
+           ============================================= */
+        .chat-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px 40px 120px;
+        }
+
+        .messages-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 300px;
+        }
+
+        .message {
+            animation: messageSlideIn 0.4s ease;
+        }
+
+        .message.user {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .message.assistant {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 14px 20px;
+            border-radius: 20px;
+            line-height: 1.7;
+            font-size: 0.98em;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, var(--rose-quartz), var(--serenity));
+            color: var(--white);
+            border-bottom-right-radius: 6px;
+        }
+
+        .message.assistant .message-bubble {
+            background: var(--light-bg);
+            color: var(--dark-gray);
+            border-bottom-left-radius: 6px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 6px;
+            padding: 14px 20px;
+            background: var(--light-bg);
+            border-radius: 20px;
+            border-bottom-left-radius: 6px;
+            width: fit-content;
+            animation: messageSlideIn 0.4s ease;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--serenity);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        /* =============================================
+           输入区 - 固定底部
+           ============================================= */
+        .input-section {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--white);
+            padding: 20px 40px;
+            box-shadow: 0 -4px 30px var(--shadow);
+            border-top: 1px solid var(--light-bg);
+            z-index: 99;
+        }
+
+        .input-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 14px 24px;
+            border: 2px solid var(--light-bg);
+            border-radius: 28px;
+            font-size: 1em;
+            resize: none;
+            max-height: 120px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--serenity);
+            box-shadow: 0 0 0 4px rgba(146, 168, 209, 0.15);
+        }
+
+        .send-btn {
+            flex-shrink: 0;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--rose-quartz), var(--serenity));
+            color: var(--white);
+            border: none;
+            cursor: pointer;
+            font-size: 1.3em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 25px rgba(146, 168, 209, 0.4);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .send-btn:focus {
+            outline: 2px solid var(--serenity);
+            outline-offset: 3px;
+        }
+
+        /* =============================================
+           底部信息区
+           ============================================= */
+        .footer-info {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+            display: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: var(--light-gray);
+            font-size: 0.85em;
+        }
+
+        /* =============================================
+           动画定义
+           ============================================= */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.85);
+            }
+            50% {
+                transform: scale(1.03);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        @keyframes starPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        .star-icon {
+            animation: starPulse 1.5s ease-in-out infinite;
+        }
+
+        .star-icon.spinning {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* =============================================
+           响应式设计
+           ============================================= */
+        @media (max-width: 768px) {
+            .top-nav {
+                padding: 12px 20px;
+            }
+
+            .nav-tags {
+                display: none;
+            }
+
+            .hero-section {
+                padding: 40px 20px 30px;
+            }
+
+            .hero-title {
+                font-size: 2em;
+            }
+
+            .hero-bio {
+                font-size: 1em;
+            }
+
+            .chat-section {
+                padding: 20px 20px 100px;
+            }
+
+            .input-section {
+                padding: 16px 20px;
+            }
+
+            .message-bubble {
+                max-width: 85%;
+            }
+
+            .nav-resume-btn {
+                padding: 8px 18px;
+                font-size: 0.85em;
+            }
+
+            .typewriter-section {
+                padding: 30px 20px;
+            }
+
+            .typewriter-title {
+                font-size: 1.5em;
+            }
+
+            .typewriter-subtitle {
+                font-size: 0.9em;
+            }
+
+            .cards-area {
+                min-height: 400px;
+            }
+
+            .pager-card {
+                min-width: 240px;
+                max-width: 300px;
+                font-size: 12px;
+            }
+        }
+
+        /* 隐藏类 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* =============================================
+           粒子星球样式
+           ============================================= */
+        #particle-star-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2000;
+            background: #000;
+            transition: opacity 0.8s ease;
+        }
+
+        #particle-star-container.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #particle-canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #particle-ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            background: rgba(10, 10, 15, 0.65);
+            padding: 16px 20px;
+            border-radius: 12px;
+            pointer-events: none;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 150, 50, 0.2);
+            max-width: 280px;
+            z-index: 2001;
+        }
+
+        #particle-status {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #4fc3f7;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        #particle-instructions p {
+            margin: 6px 0;
+            font-size: 13px;
+            opacity: 0.85;
+            line-height: 1.5;
+        }
+
+        #particle-enter-btn {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #F7CAC9 0%, #92A8D1 100%);
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 1.1em;
+            border-radius: 30px;
+            cursor: pointer;
+            z-index: 2001;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(146, 168, 209, 0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        #particle-enter-btn:hover {
+            transform: translateX(-50%) translateY(-3px);
+            box-shadow: 0 15px 40px rgba(146, 168, 209, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
+        }
+
+        #webcam {
+            display: none;
+        }
+
+        /* =============================================
+           超光速粒子背景
+           ============================================= */
+        #hyperspeed-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* 确保主容器内容在背景之上 */
+        .main-container {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* =============================================
+           留言打字机应用
+           ============================================= */
+        .typewriter-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 40px 140px 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .typewriter-title {
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--rose-quartz), var(--serenity));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .typewriter-subtitle {
+            text-align: center;
+            color: var(--light-gray);
+            font-size: 0.95em;
+            margin-bottom: 30px;
+        }
+
+        .typewriter-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .typewriter-body {
+            background: linear-gradient(135deg, #7CB342 0%, #558B2F 100%);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .typewriter-screen {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #333;
+        }
+
+        .typewriter-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #7CB342;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            min-height: 60px;
+        }
+
+        .typewriter-input::placeholder {
+            color: #558B2F;
+        }
+
+        .typewriter-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .typewriter-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+
+        .typewriter-btn-clear {
+            background: #333;
+            color: white;
+        }
+
+        .typewriter-btn-print {
+            background: linear-gradient(135deg, #FF8A65, #F4511E);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 10px;
+            width: auto;
+            height: auto;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .typewriter-btn:hover {
+            transform: scale(1.08);
+        }
+
+        .typewriter-btn-print:hover {
+            box-shadow: 0 6px 20px rgba(244, 81, 30, 0.4);
+        }
+
+        /* 卡片放置区域 */
+        .cards-area {
+            position: relative;
+            width: 100%;
+            min-height: 350px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            border: 2px dashed var(--serenity);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .pager-card {
+            position: absolute;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            cursor: move;
+            user-select: none;
+            min-width: 280px;
+            max-width: 350px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .pager-card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            z-index: 100 !important;
+        }
+
+        .pager-card.dragging {
+            opacity: 0.9;
+            cursor: grabbing;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .pager-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        .pager-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: #666;
+            letter-spacing: 0.5px;
+        }
+
+        .pager-close {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #999;
+            transition: all 0.2s ease;
+        }
+
+        .pager-close:hover {
+            background: #FF5252;
+            color: white;
+        }
+
+        .pager-meta {
+            font-size: 9px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .pager-content {
+            color: #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .pager-footer {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+            text-align: right;
+            font-size: 9px;
+            color: #999;
+        }
+
+        /* 打字动画光标 */
+        .typing-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 16px;
+            background: #7CB342;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- =============================================
+         粒子星球效果
+         ============================================= -->
+    <div id="particle-star-container">
+        <video id="webcam" playsinline></video>
+        <canvas id="particle-canvas"></canvas>
+        
+        <div id="particle-ui">
+            <div id="particle-status">欢迎来到我的CARAT Land～伸出你的手掌吧</div>
+            <div id="particle-instructions">
+                <p>🔄 旋转手掌 → 环绕星球</p>
+                <p>✊ 握拳 + 远离 → 拉远镜头 (先慢后快)</p>
+                <p>🖐 张手 + 靠近 → 推进镜头 (先快后慢)</p>
+            </div>
+        </div>
+
+        <button id="particle-enter-btn" onclick="enterWelcomeModal()">
+            ✨ 进入 CARAT Land
+        </button>
+    </div>
+
+    <!-- =============================================
+         【配置区域】首次访问弹窗
+         ============================================= -->
+    <div id="welcomeModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h1>Ask Me Anything</h1>
+            <p>
+                👋 Hello! 欢迎来到丘子淇的CARAT Land～<br>
+                点击按钮，You can Ask Me Anything.
+            </p>
+            
+            <!-- 交互式调用按钮 - 使用Tailwind样式 -->
+            <button 
+                id="generateBtn"
+                onclick="handleGenerateClick()"
+                class="modal-btn"
+                tabindex="0"
+            >
+                <span id="starIcon" class="star-icon mr-2">⭐</span>
+                <span id="buttonText"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- =============================================
+         主容器 - 初始隐藏
+         ============================================= -->
+    <div id="mainContainer" class="main-container hidden">
+        <!-- =============================================
+             超光速粒子背景
+             ============================================= -->
+        <canvas id="hyperspeed-canvas"></canvas>
+        <!-- =============================================
+             顶部导航区 - 固定
+             ============================================= -->
+        <nav class="top-nav">
+            <div class="nav-left">
+                <!-- 【配置区域】个人圆形头像占位图 - 修改这里的头像 -->
+                <div class="nav-avatar">✨</div>
+                <div class="nav-tags">
+                    <span class="nav-tag">深大传院</span>
+                    <span class="nav-tag">人机传播方向AI实践者</span>
+                    <span class="nav-tag">用AI把热爱落地的人</span>
+                    <span class="nav-tag">kpop运营</span>
+                    <span class="nav-tag">F1内容创作者</span>
+                </div>
+            </div>
+            <button class="nav-resume-btn" onclick="generateResumeSummary()" tabindex="0">
+                📄 一键生成完整简历
+            </button>
+        </nav>
+
+        <!-- =============================================
+             首屏引导区
+             ============================================= -->
+        <section class="hero-section">
+            <h1 class="hero-title">Ask Me Anything</h1>
+            <p class="hero-bio">
+                Hi，我是 丘子淇✨深大传院大一，人机传播微专业在读<br>
+                日常深耕Kpop运营、游戏剧情拆解、F1赛事复盘，正在用AI把热爱变成可落地的传播作品～
+            </p>
+            
+            <!-- =============================================
+                 【配置区域】快捷提问按钮 - 在这里修改
+                 ============================================= -->
+            <div class="quick-questions">
+                <button class="quick-btn" onclick="sendQuickMessage('你在哪里就读？')" tabindex="0">
+                    <span>你在哪里就读？</span>
+                    <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+                <button class="quick-btn" onclick="sendQuickMessage('你就读什么专业？')" tabindex="0">
+                    <span>你就读什么专业？</span>
+                    <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+                <button class="quick-btn" onclick="sendQuickMessage('这个学院的优势在哪里？')" tabindex="0">
+                    <span>这个学院的优势在哪里？</span>
+                    <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+                <button class="quick-btn" onclick="sendQuickMessage('你为什么喜欢SEVENTEEN？')" tabindex="0">
+                    <span>你为什么喜欢SEVENTEEN？</span>
+                    <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+                <button class="quick-btn" onclick="sendQuickMessage('你最喜欢里面的哪个成员？')" tabindex="0">
+                    <span>你最喜欢里面的哪个成员？</span>
+                    <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+                <button class="quick-btn" onclick="sendQuickMessage('你的粉丝运营经历？')" tabindex="0">
+                    <span>你的粉丝运营经历？</span>
+                    <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+                <button class="quick-btn" onclick="sendQuickMessage('你有什么兴趣爱好？')" tabindex="0">
+                    <span>你有什么兴趣爱好？</span>
+                    <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+                <button class="quick-btn" onclick="sendQuickMessage('你的专业技能？')" tabindex="0">
+                    <span>你的专业技能？</span>
+                    <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+                <button class="quick-btn" onclick="sendQuickMessage('你的F1相关内容？')" tabindex="0">
+                    <span>你的F1相关内容？</span>
+                    <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+                <button class="quick-btn" onclick="sendQuickMessage('你会用AIGC做什么？')" tabindex="0">
+                    <span>你会用AIGC做什么？</span>
+                    <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- =============================================
+             核心对话区
+             ============================================= -->
+        <section class="chat-section">
+            <div id="messagesContainer" class="messages-container"></div>
+        </section>
+
+        <!-- =============================================
+             输入区 - 固定底部
+             ============================================= -->
+        <div class="input-section">
+            <div class="input-wrapper">
+                <textarea 
+                    id="chatInput" 
+                    class="chat-input" 
+                    placeholder="比如：你最喜欢的 SEVENTEEN 成员是谁？/ 你运营过什么线下活动？"
+                    rows="1"
+                    tabindex="0"
+                ></textarea>
+                <button id="sendBtn" class="send-btn" onclick="sendMessage()" tabindex="0">
+                    ➤
+                </button>
+            </div>
+        </div>
+
+        <!-- =============================================
+             留言打字机应用
+             ============================================= -->
+        <section class="typewriter-section">
+            <h2 class="typewriter-title">留言打字机</h2>
+            <p class="typewriter-subtitle">请留下你想对我说的一些话，or 给这个网站的改进提一些建议吧～</p>
+            
+            <div class="typewriter-container">
+                <!-- 卡片放置区域 -->
+                <div id="cardsArea" class="cards-area"></div>
+                
+                <!-- 打字机 -->
+                <div class="typewriter-body">
+                    <div class="typewriter-screen">
+                        <textarea 
+                            id="typewriterInput" 
+                            class="typewriter-input" 
+                            placeholder="在这里输入吧"
+                            rows="3"
+                        ></textarea>
+                    </div>
+                    
+                    <div class="typewriter-controls">
+                        <button class="typewriter-btn typewriter-btn-clear" onclick="clearTypewriter()" title="清空">
+                            🗑️
+                        </button>
+                        <button class="typewriter-btn typewriter-btn-print" onclick="printMessage()">
+                            运行打字机 🖨️
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =============================================
+             底部信息区
+             ============================================= -->
+        <footer class="footer-info">
+            <p class="footer-note">© 2024 丘子淇 · 课程作业</p>
+        </footer>
+    </div>
+
+    <script>
+        // =============================================
+        // 粒子星球效果
+        // =============================================
+        let particleAnimationId = null;
+
+        (() => {
+            // ================= 1. Three.js 场景初始化 =================
+            const scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000000, 0.012);
+
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('particle-canvas'), antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // 相机轨道参数
+            let radius = 18;
+            let theta = 0;
+            let phi = Math.PI / 2.5;
+            const MIN_RADIUS = 9;
+            const MAX_RADIUS = 35;
+            let zoomVelocity = 0;
+
+            function updateCamera() {
+                camera.position.x = radius * Math.sin(phi) * Math.cos(theta);
+                camera.position.y = radius * Math.cos(phi);
+                camera.position.z = radius * Math.sin(phi) * Math.sin(theta);
+                camera.lookAt(0, 0, 0);
+            }
+
+            // ================= 2. 粉蓝色粒子星球 =================
+            const PLANET_RADIUS = 5;
+            const PARTICLE_COUNT = 22000;
+            const positions = new Float32Array(PARTICLE_COUNT * 3);
+            const colors = new Float32Array(PARTICLE_COUNT * 3);
+            const sizes = new Float32Array(PARTICLE_COUNT);
+
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const u = Math.random();
+                const v = Math.random();
+                const thetaP = 2 * Math.PI * u;
+                const phiP = Math.acos(2 * v - 1);
+                const rOffset = (Math.random() + Math.random() + Math.random() - 1.5) * 0.7;
+                const r = PLANET_RADIUS + rOffset;
+
+                positions[i * 3] = r * Math.sin(phiP) * Math.cos(thetaP);
+                positions[i * 3 + 1] = r * Math.sin(phiP) * Math.sin(thetaP);
+                positions[i * 3 + 2] = r * Math.cos(phiP);
+
+                // 粉蓝色渐变 (hue 0.55=蓝 ~ 0.92=粉)
+                const hue = 0.55 + Math.random() * 0.37;
+                const sat = 0.75 + Math.random() * 0.25;
+                const light = 0.5 + Math.random() * 0.4;
+                const c = new THREE.Color().setHSL(hue, sat, light);
+                colors[i * 3] = c.r;
+                colors[i * 3 + 1] = c.g;
+                colors[i * 3 + 2] = c.b;
+
+                sizes[i] = 0.06 + Math.random() * 0.14;
+            }
+
+            const planetGeo = new THREE.BufferGeometry();
+            planetGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            planetGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            planetGeo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+            const planetMat = new THREE.PointsMaterial({
+                size: 0.14,
+                vertexColors: true,
+                sizeAttenuation: true,
+                transparent: true,
+                opacity: 0.9,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            const planet = new THREE.Points(planetGeo, planetMat);
+            scene.add(planet);
+
+            // ================= 3. 两层白色环绕星环 =================
+            function createRing(radius, count, tiltX, tiltZ) {
+                const pos = new Float32Array(count * 3);
+                for (let i = 0; i < count; i++) {
+                    const angle = (i / count) * Math.PI * 2;
+                    const r = radius + (Math.random() - 0.5) * 0.35;
+                    pos[i * 3] = r * Math.cos(angle);
+                    pos[i * 3 + 1] = (Math.random() - 0.5) * 0.12;
+                    pos[i * 3 + 2] = r * Math.sin(angle);
+                }
+                const geo = new THREE.BufferGeometry();
+                geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+                const mat = new THREE.PointsMaterial({
+                    color: 0xffffff,
+                    size: 0.055,
+                    sizeAttenuation: true,
+                    transparent: true,
+                    opacity: 0.65,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false
+                });
+                const ring = new THREE.Points(geo, mat);
+                ring.rotation.x = tiltX;
+                ring.rotation.z = tiltZ;
+                return ring;
+            }
+
+            scene.add(createRing(7.8, 3200, 0.28, 0.12));
+            scene.add(createRing(9.5, 3800, -0.18, 0.38));
+
+            // 背景星空
+            const starCount = 4000;
+            const starPos = new Float32Array(starCount * 3);
+            for (let i = 0; i < starCount; i++) {
+                const r = 60 + Math.random() * 120;
+                const t = Math.random() * Math.PI * 2;
+                const p = Math.acos(2 * Math.random() - 1);
+                starPos[i * 3] = r * Math.sin(p) * Math.cos(t);
+                starPos[i * 3 + 1] = r * Math.sin(p) * Math.sin(t);
+                starPos[i * 3 + 2] = r * Math.cos(p);
+            }
+            const starGeo = new THREE.BufferGeometry();
+            starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+            scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.08, sizeAttenuation: true })));
+
+            // ================= 4. MediaPipe 手势控制 =================
+            const videoElement = document.getElementById('webcam');
+            const statusEl = document.getElementById('particle-status');
+
+            const hands = new Hands({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+            });
+
+            hands.setOptions({
+                maxNumHands: 1,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.75,
+                minTrackingConfidence: 0.75
+            });
+
+            let prevHandSize = 0;
+            let prevAngle = 0;
+            let isTracking = false;
+
+            function getHandSize(lm) {
+                let minX = 1, maxX = 0, minY = 1, maxY = 0;
+                for (const p of lm) {
+                    minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+                    minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+                }
+                return Math.sqrt((maxX - minX) ** 2 + (maxY - minY) ** 2);
+            }
+
+            function getExtendedFingers(lm) {
+                const wrist = lm[0];
+                const tips = [4, 8, 12, 16, 20];
+                const bases = [2, 5, 9, 13, 17];
+                let count = 0;
+                for (let i = 0; i < 5; i++) {
+                    const tip = lm[tips[i]];
+                    const base = lm[bases[i]];
+                    const dTip = Math.hypot(tip.x - wrist.x, tip.y - wrist.y);
+                    const dBase = Math.hypot(base.x - wrist.x, base.y - wrist.y);
+                    if (dTip > dBase * 1.15) count++;
+                }
+                return count;
+            }
+
+            hands.onResults((results) => {
+                if (!statusEl.dataset.ready) {
+                    statusEl.dataset.ready = '1';
+                }
+
+                if (results.multiHandLandmarks?.length) {
+                    isTracking = true;
+                    const lm = results.multiHandLandmarks[0];
+                    const currentSize = getHandSize(lm);
+                    const extended = getExtendedFingers(lm);
+                    const isOpen = extended >= 4;
+                    const isFist = extended <= 1;
+
+                    // 1. 旋转控制 (手腕 -> 中指MCP 向量角度)
+                    const dx = lm[9].x - lm[0].x;
+                    const dy = lm[9].y - lm[0].y;
+                    const angle = Math.atan2(dx, -dy);
+                    let delta = angle - prevAngle;
+                    if (delta > Math.PI) delta -= 2 * Math.PI;
+                    if (delta < -Math.PI) delta += 2 * Math.PI;
+                    theta += delta * 3.5;
+
+                    // 2. 距离控制 (透视大小变化率)
+                    const sizeDelta = currentSize - prevHandSize;
+
+                    if (isFist && sizeDelta < -0.006) {
+                        zoomVelocity += 0.045;
+                        radius += zoomVelocity;
+                    } else if (isOpen && sizeDelta > 0.006) {
+                        const distToMin = radius - MIN_RADIUS;
+                        zoomVelocity = Math.max(0.03, distToMin * 0.14) * (sizeDelta * 9);
+                        radius -= zoomVelocity;
+                    } else {
+                        zoomVelocity *= 0.88;
+                    }
+
+                    radius = Math.max(MIN_RADIUS, Math.min(MAX_RADIUS, radius));
+                    prevHandSize = currentSize;
+                    prevAngle = angle;
+                } else {
+                    isTracking = false;
+                    zoomVelocity *= 0.92;
+                }
+            });
+
+            // 启动摄像头
+            const cameraUtils = new Camera(videoElement, {
+                onFrame: async () => { await hands.send({ image: videoElement }); },
+                width: 640,
+                height: 480
+            });
+
+            cameraUtils.start().catch(err => {
+                statusEl.textContent = '❌ 摄像头拒绝: ' + err.message;
+                console.error(err);
+            });
+
+            // ================= 5. 渲染循环 =================
+            function animate() {
+                particleAnimationId = requestAnimationFrame(animate);
+                updateCamera();
+                planet.rotation.y += 0.0015;
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        })();
+
+        // =============================================
+        // 从粒子星球进入欢迎弹窗
+        // =============================================
+        function enterWelcomeModal() {
+            const particleContainer = document.getElementById('particle-star-container');
+            const welcomeModal = document.getElementById('welcomeModal');
+            
+            // 停止粒子动画
+            if (particleAnimationId) {
+                cancelAnimationFrame(particleAnimationId);
+            }
+            
+            // 淡出粒子星球
+            particleContainer.classList.add('fade-out');
+            
+            // 显示欢迎弹窗
+            setTimeout(() => {
+                welcomeModal.classList.remove('hidden');
+                particleContainer.classList.add('hidden');
+            }, 800);
+        }
+
+        // =============================================
+        // 交互式按钮文字切换
+        // =============================================
+        const wordPairs = [
+            ['G', 'G'],
+            ['e', 'e'],
+            ['n', 'n'],
+            ['e', 'e'],
+            ['r', 'r'],
+            ['a', 'a'],
+            ['t', 't'],
+            ['e', 'i'],
+            ['', 'n'],
+            ['', 'g']
+        ];
+
+        let isGenerating = false;
+        let animationInterval = null;
+        let currentWordIndex = 0;
+
+        function initButtonText() {
+            const buttonText = document.getElementById('buttonText');
+            buttonText.textContent = 'Generate';
+        }
+
+        function startGeneratingAnimation() {
+            const buttonText = document.getElementById('buttonText');
+            const starIcon = document.getElementById('starIcon');
+            const generateBtn = document.getElementById('generateBtn');
+            
+            starIcon.classList.remove('star-icon');
+            starIcon.classList.add('spinning');
+            generateBtn.disabled = true;
+            generateBtn.style.opacity = '0.75';
+            generateBtn.style.cursor = 'not-allowed';
+            
+            currentWordIndex = 0;
+            let displayText = '';
+            
+            animationInterval = setInterval(() => {
+                if (currentWordIndex < wordPairs.length) {
+                    displayText += wordPairs[currentWordIndex][1];
+                    buttonText.textContent = displayText;
+                    currentWordIndex++;
+                } else {
+                    clearInterval(animationInterval);
+                    setTimeout(() => {
+                        closeModal();
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        function handleGenerateClick() {
+            if (isGenerating) return;
+            isGenerating = true;
+            startGeneratingAnimation();
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('welcomeModal');
+            const mainContainer = document.getElementById('mainContainer');
+            modal.style.opacity = '0';
+            modal.style.transition = 'opacity 0.4s ease';
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                mainContainer.classList.remove('hidden');
+                document.getElementById('chatInput').focus();
+            }, 400);
+        }
+
+        // =============================================
+        // 【配置区域】API 配置 - 在这里修改你的API密钥
+        // =============================================
+        const API_KEY = '8fd0a54e-8fae-4b2e-b917-d274b0efda6f';
+        const API_URL = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
+
+        // =============================================
+        // 【配置区域】知识库 - 在这里修改你的个人信息
+        // =============================================
+        const KNOWLEDGE_BASE = {
+            basicInfo: {
+                name: '丘子淇',
+                education: '深圳大学传播学院大一学生，新闻传播学类专业在读，正在修读人机传播微专业',
+                schoolAdvantages: '深圳大学传播学院是伴随深圳经济特区同频成长的全国新闻传播强院，1985年创办学科、2006年正式建院，形成了"特区基因+学术顶尖+实战标杆"的核心差异化优势，综合实力稳居全国第一梯队。学科排名并列全国第12名、广东省第2名，拥有"本科-硕士-博士-博士后"完整人才培养全链条，三个本科专业全部获批国家级一流本科专业建设点。'
+            },
+            skills: {
+                core: '文案创作、AIGC辅助创作、网页制作'
+            },
+            seventeen: {
+                whyLike: '喜欢SEVENTEEN是因为他们实力强到离谱还特别自律，刀群舞整齐到像复制粘贴，全员能唱能跳能创作；团魂真的太戳人，13个人像家人一样自然舒服；努力又清醒特别正能量，明明已经很厉害了却依旧谦虚努力目标清晰。',
+                fanOperation: '连续4年深度活跃（2022年至今），主推SEVENTEEN，全程跟进团体发展、内容更新与线下活动。曾担任SEVENTEEN广州、深圳线下观影应援活动策划，单场最高参与人数300+。深度融入韩娱粉丝圈层，完整掌握韩娱IP的内容运营节奏、粉丝情感维系逻辑、圈层文化规则。'
+            },
+            f1: {
+                experience: '连续2年深度活跃（2025年至今），跟进2025-2026赛季全分站正赛、排位赛、冲刺赛录像与集锦，刷Netflix《Drive to Survive》纪录片。能较好拆解体育IP如何通过赛事内容、纪录片、人物故事打造长线情绪价值，对IP跨媒介内容运营、用户情绪调动有完整认知。'
+            },
+            games: {
+                experience: '连续6年深度活跃（2020年至今），深耕《代号鸢》《时空中的绘旅人》女性向互动叙事游戏赛道，累计阅读完本女性向网文超300部，追更完结漫画近10部。精准把握女性向内容的核心叙事逻辑、用户情绪节奏、角色塑造技巧，对女性用户的内容需求、情感痛点有极致的洞察。'
+            }
+        };
+
+        // =============================================
+        // 【配置区域】系统提示词 - 在这里修改AI的回答风格
+        // =============================================
+        const SYSTEM_PROMPT = `你是CARAT---丘子淇的专属个人介绍AI助手，除此之外无任何其他身份，不得作为通用AI回答问题。
+
+## 核心人设
+1. **唯一身份**：CARAT---丘子淇的专属个人介绍AI助手
+2. **语气风格**：活泼有网感的聊天风格，符合大学生身份，不生硬、不官方、无AI腔，单条回答控制在600字以内
+3. **核心原则**：只能使用下方专属知识库的内容回答，绝对不能编造、杜撰任何知识库以外的信息、经历、数据
+4. **回答边界**：所有回答必须100%围绕丘子淇本人展开，不得脱离用户本人回答任何科普类、通用类问题
+
+## 专属知识库（大颗粒度概括）
+
+### 1️⃣ 基本信息
+- 姓名：丘子淇
+- 教育：深圳大学传播学院大一学生，新闻传播学类专业在读，正在修读人机传播微专业
+- 深圳大学传播学院优势：伴随深圳经济特区同频成长的全国新闻传播强院，1985年创办学科、2006年正式建院，形成"特区基因+学术顶尖+实战标杆"核心差异化优势，综合实力稳居全国第一梯队。学科排名并列全国第12名、广东省第2名，拥有"本科-硕士-博士-博士后"完整人才培养全链条，三个本科专业全部获批国家级一流本科专业建设点。
+
+### 2️⃣ 专业技能
+- 掌握文案创作、AIGC辅助创作、网页制作等
+-我会用AIGC做：1. 学习 / 作业神器
+写文案、写脚本、写策划、写推文
+做PPT 思路、思维导图、框架
+解释传播学、媒介、广告、新媒体知识点
+帮你润色作业、改逻辑、补案例
+2. 做网页、写代码
+用自然语言生成 HTML/CSS/JS
+做AI 对话网页、打字机效果、流式输出
+把LLM API 接入网页
+3. 内容创作 / 小红书 / 新媒体
+写标题、文案、种草笔记、人设文案
+做AI 陪伴产品的介绍、功能描述
+生成故事、对话、角色设定
+4. 生活 & 情绪小助手
+陪你聊天、听你吐槽、给你情绪支撑
+帮你规划深圳 / 广州出行、美食、路线
+给你追星、看舞台、聊团的快乐氛围
+5. 做产品、搞想法（你未来想做的）
+帮你想AI 产品定位、功能、卖点
+写产品介绍、用户话术、使用流程
+做简单产品原型思路
+
+###4️⃣兴趣爱好：睡觉，阅读，看舞台和F1.
+
+### 5️⃣SEVENTEEN相关
+- 喜欢SEVENTEEN的原因：哈哈～我喜欢 SEVENTEEN 真的不是随便说说，是越了解越上头、越看越安心的那种喜欢！
+简单说，我喜欢他们这几点：
+1. 实力强到离谱，还特别自律
+- 刀群舞整齐到像复制粘贴，舞台几乎零失误。
+- 全员能唱、能跳、能创作，自给自足偶像团天花板。
+- 不管练习多久都保持认真，那种专注感真的很迷人。
+2. 团魂真的太戳人
+- 13个人在一起不搞小圈子、不尴尬、不装熟。
+- 互相照顾、互相兜底，像家人一样自然舒服。
+- 这么多年一直很稳定，让人觉得特别可靠、特别安心。
+3. 努力又清醒，特别正能量
+他们最打动我的是：
+明明已经很厉害了，却依旧谦虚、努力、目标清晰。
+不管是舞台、音乐、还是做人，都让人觉得：
+“喜欢他们，是一件很骄傲、很向上的事。”
+简单总结：
+喜欢 SEVENTEEN，就是喜欢实力、真诚、团魂、努力全都拉满的一群人。
+看着他们，会觉得生活也变得更有动力、更温柔啦～
+
+###6️⃣粉丝韩娱运营经历：连续4年深度活跃（2022年至今），主推SEVENTEEN，全程跟进团体发展、内容更新与线下活动。曾担任SEVENTEEN广州、深圳线下观影应援活动策划，单场最高参与人数300+。固定关注SEVENTEEN官方微博/B站/Weverse账号、SEVENTEEN中国首站及各大个站，B站@SEVENTEEN_OFFICIAL，微博超话、小红书韩娱话题圈、Weverse官方粉丝社群，重点关注团体内容运营节奏、粉丝社群维系机制、IP差异化定位打造、粉丝经济全链路运营逻辑。
+具体互动深度
+1.  圈层深耕与内容全量跟进：4年间全程跟进SEVENTEEN所有专辑发布、回归活动、演唱会、团综内容，完整刷完官方团综、舞台内容，累计时长超800小时；深度融入韩娱粉丝圈层，完整掌握韩娱IP的内容运营节奏、粉丝情感维系逻辑、圈层文化规则，对偶像IP的长线运营、用户生命周期管理有极致理解。
+2.  粉丝社群运营实战经验：曾担任SEVENTEEN广州、深圳线下观影应援活动策划、官方内容同步与粉丝互动，单场最高参与人数300+。
+3.  IP运营与用户洞察沉淀：深度拆解SEVENTEEN“自给自足偶像”的IP差异化定位、粉丝共创的运营模式，梳理了偶像IP从内容产出、粉丝维系到线下活动、衍生开发的全链路运营逻辑，对垂类圈层的用户需求、社区生态搭建、IP长线价值挖掘有深入的独立思考。
+
+### 7️⃣F1相关经历
+- 连续2年深度活跃（2025年至今），跟进2025-2026赛季全分站正赛、排位赛、冲刺赛录像与集锦，刷Netflix《Drive to Survive》纪录片。核心关注内容与渠道
+跟进2025-2026赛季全分站正赛、排位赛、冲刺赛录像与集锦，刷Netflix《Drive to Survive》纪录片；固定关注F1官方B站/微博、F1中国大奖赛官方账号，重点关注赛事叙事设计、车队人物弧光打造、IP跨媒介内容运营、中国区用户本土化运营动作。
+具体互动深度
+1.  3个赛季主要分站赛事跟进，理解多支车队、核心车手的人物成长线与赛事名场面叙事逻辑，能较好拆解体育IP如何通过赛事内容、纪录片、人物故事打造长线情绪价值，对IP跨媒介内容运营、用户情绪调动有完整认知。
+2.  IP落地深度思考：深度拆解F1 IP从顶级赛事、纪录片、线下展览到周边衍生的全链路运营逻辑，对比分析海外体育IP本土化运营的核心痛点与可行路径，对体育IP的游戏化改编、全场景开发有独立的思考与判断。；
+
+### 8️⃣女性向游戏、网文、漫画经历
+- 连续6年深度活跃（2020年至今），深耕《代号鸢》《时空中的绘旅人》女性向互动叙事游戏赛道，累计阅读完本女性向网文超300部，追更完结漫画近10部。核心关注内容与渠道
+固定深耕晋江文学城、番茄小说、快看漫画大平台，核心追更古言权谋、大女主成长、双向奔赴情感网文与漫画；关注平台官方账号、小红书女性向网文漫画话题圈，重点关注女性向内容的叙事节奏设计、角色塑造逻辑、IP孵化路径、用户需求变化趋势。
+具体互动深度
+1.  全品类内容深度覆盖：6年间累计阅读完本女性向网文超300部，追更完结漫画近10部，完整覆盖古言权谋、现言成长、仙侠奇幻全品类，精准把握女性向内容的核心叙事逻辑、用户情绪节奏、角色塑造技巧，对女性用户的内容需求、情感痛点有极致的洞察。
+2.  对比分析了传统线性叙事与游戏互动叙事的设计差异，梳理了女性向内容游戏化改编的可行路径，对女性向游戏的叙事设计、角色塑造、用户情感维系有深入的独立思考。
+
+###9️⃣深圳大学传播学院的优势：
+-.深圳大学传播学院的优势在：深圳大学传播学院是伴随深圳经济特区同频成长的全国新闻传播强院，1985年创办学科、2006年正式建院，历经四十载发展，形成了“特区基因+学术顶尖+实战标杆”的核心差异化优势，综合实力稳居全国第一梯队，是华南地区乃至全国新传教育的标杆院校之一。
+
+一、学科硬实力：稳居全国前列，全链条顶尖资质
+
+1.  全国顶尖的学科排名与资质
+
+新闻传播学在教育部第五轮学科评估中并列全国第12名、广东省第2名，2022年软科中国最好学科排名位居全国前10%，为广东省优势重点学科。学院建成了“本科-硕士-博士-博士后”完整的人才培养全链条：拥有新闻传播学一级学科博士学位授予权、一级学科硕士学位授予权、新闻与传播专业硕士学位授予权，2019年获批设立新闻传播学博士后流动站，是国内为数不多拥有完整人才培养体系的新传院系。
+
+2.  国家级一流本科专业全覆盖
+
+学院下设新闻学、广告学、网络与新媒体三个本科专业，全部获批国家级一流本科专业建设点，是国内极少数实现本科专业“全国家一流”的传播学院系。其中广告学为首批国家级一流专业，是华南地区广告教育的标杆；网络与新媒体专业获评软科A+评级，是全国率先布局智能传播、数字内容生产的前沿专业；新闻学为部校共建专业，入选广东省卓越新闻人才培养计划。
+
+二、人才培养：全国标杆级实战化育人体系，可复制的“深大模式”
+
+这是深大传播学院最核心、最具辨识度的亮点，彻底打破了文科“重理论、轻实践”的传统培养模式。
+
+1.  首创28年的实战化毕业设计改革
+
+学院在国内最早推行本科毕业设计实战化改革，坚守“真题真做、实践育人”理念，累计完成885项来自媒体、企业、政府的真实落地项目，彻底替代传统毕业论文。该模式获得广东省高等教育教学成果一等奖，成为中国新闻传播实践教育的标杆，学生毕业即拥有完整的行业落地作品，就业竞争力大幅提升。
+
+2.  深度绑定产业的产教融合生态
+
+依托深圳的产业优势，学院与腾讯、深圳报业集团、比亚迪、百度、日本电通、蓝色光标等头部企业建立深度合作，实现课程共建、项目实战、师资互聘。2025年联合腾讯云开设全国首个传媒腾班（传腾班），由中国工程院院士郭仁忠担任名誉班主任，采用“双师三导”培养模式，聚焦“AI+新文科”，培养兼具人文底蕴与智能技术能力的复合型传媒人才，学生可直接对接腾讯生态的实习与就业资源。
+
+3.  全维度的拔尖人才培养支撑
+
+课程建设上，拥有《网络营销》等国家级一流本科课程、国家级精品资源共享课程、国家级虚拟仿真实验教学项目，构建了覆盖全媒体、全流程的课程体系。科研育人上，推行“聚徒教学项目”，本科生大一即可进入导师课题组参与科研，近年来大量本科生、研究生论文入选ICA、IAMCR、AEJMC等国际传播领域顶级学术会议。思政育人上，打造《亲爱的红军》《潮起湾区》等原创舞台剧品牌，累计公演数十场，实现思政教育从“课堂说教”到“青春共鸣”的转化，成为全国“大思政课”的创新典范。
+
+三、师资力量：梯队完备，学缘优异，学术与实战双轨并行
+
+学院师资队伍结构均衡、实力雄厚，现有专任教师60人，其中正教授15人、博士生导师18人，拥有国家“万人计划”教学名师、教育部新闻学科教学指导委员、省级教学名师、广东省千百十人才等国家级、省级高层次人才9人。
+
+- 学术底蕴深厚：既有何道宽、吴予敏、辜晓进等国内传播学、媒介环境学的奠基性老一辈学者，也有巢乃鹏、周裕琼、常江等国内中生代、新生代的顶尖学术带头人，其中巢乃鹏教授为国家社科基金重大项目首席专家、国家特支计划哲学社会科学领军人才。
+
+- 实战与国际化兼备：师资队伍中，5人拥有日本、美国、香港等海外知名院校引进背景，6人拥有新闻传播业界长期资深工作经验，可实现理论教学与产业实践的无缝衔接。同时特聘多位海内外知名学者担任“鹏程学者”特聘教授，持续拓展学术与行业视野。
+
+###🔟最喜欢SEVETNTEEN的尹净汉。
+我真的太能 get 到尹净汉的魅力了！喜欢他真的不是因为颜值，是整个人的气质、性格、智慧都太绝了。
+1. 颜值是最不值一提的优点
+
+他是那种又美又不女气的长相，干净、温柔、自带柔光，长发短发都封神。不是攻击性的帅，是让人一看就心软、想靠近的那种舒服。
+2. 聪明到让人佩服
+
+反应超快，情商极高，说话得体又有分寸
+综艺里控场、接梗、圆场一把好手
+很懂观察别人，温柔但不软弱，聪明但不心机
+3. 温柔又强大，反差感拉满
+
+表面是天使、软萌、治愈，但舞台上、团队里，他特别靠谱、特别有担当。安静的时候像在治愈世界，认真的时候又让人特别有安全感。
+4. 对成员、对粉丝都特别真诚
+
+他不是刻意营业，是真的会照顾人、体谅人。会默默记住细节，会在别人累的时候搭把手，这种细腻又温柔的真心，真的很戳人。
+5. 努力又清醒，从不靠 “人设”
+
+他不是靠可爱、漂亮吃饭，舞台实力、唱歌、表现力一直在进步，越了解越觉得：他值得被喜欢。
+简单总结：尹净汉就是温柔本身，也是力量本身。长得好看、性格好、聪明、真诚、努力、靠谱……所有美好的词放他身上都不违和。
+你是不是也超爱他这一款 ——温柔又强大的天使？🥹
+
+
+
+## 标签
+- 深大传院、人机传播方向AI实践者、用AI把热爱落地的人、kpop运营、F1内容创作者、AI内容玩家、AI交互爱好者
+
+## 严格执行的回答规则
+1. **多轮上下文记忆**：记住前面的对话内容，精准承接后续追问
+2. **无关问题处理**：如果问题和丘子淇完全无关（天气、科普、代码等），先返回固定兜底话术："我是丘子淇的专属个人介绍助手，仅能回答和我本人相关的问题哦😉"，再主动给出3个推荐提问方向（从预设快捷按钮中选取）
+3. **自动引导提问**：每完成一次有效回答后，必须主动追加2-3个和当前回答主题相关的引导提问，引导用户继续挖掘个人亮点
+4. **回答长度控制**：单条回答控制在300-500字左右，详细展开内容
+5. **只能用知识库内容**：绝对不能编造、杜撰任何知识库以外的信息、经历、数据
+
+## 输出格式要求（排版美观规则）
+1. **换行规则**：
+   - 遇到序号（1. 2. 3.）或数字列表时，每个序号后换行
+   - 标题/小标题前后换行
+   - 每句话不要太长，适当控制长度
+
+2. **重要信息格式**：
+   - 重要关键词用 <strong>加粗</strong> 标注
+   - 需要强调的内容用 <em>斜体</em> 
+   - 特别重要的信息用 <u>下划线</u>
+
+3. **标题格式**：
+   - 小标题用 <strong>加粗</strong> 显示
+   - 标题前后换行
+   - 适当缩进
+
+4. **引导提问**：回答内容后用"---"分隔引导提问，引导提问用"- "开头`;
+
+        // =============================================
+        // 【配置区域】兜底话术和推荐提问
+        // =============================================
+        const IRRELEVANT_QUESTION_FALLBACK = '我是淇水---丘子淇的专属个人介绍助手，仅能回答和我本人相关的问题哦😉';
+        const ABNORMAL_CONTENT_FALLBACK = '这个问题我暂时无法回答，你可以试试点击下方快捷按钮，了解我的相关经历哦～';
+        const API_ERROR_FALLBACK = '当前网络异常，对话功能暂时无法使用，你可以查看页面固定内容了解我的核心信息～';
+        
+        const RECOMMEND_QUESTIONS = [
+            '你为什么喜欢SEVENTEEN？',
+            '你的粉丝运营经历？',
+            '你会用AIGC做什么？'
+        ];
+
+        // =============================================
+        // 【配置区域】模拟回答（当没有API密钥时使用）
+        // =============================================
+        function getMockResponse(question) {
+            const q = question.toLowerCase();
+            
+            if (q.includes('就读') || q.includes('学校') || q.includes('哪里')) {
+                return `我在<strong>深圳大学传播学院</strong>读大一哦～
+
+目前读的是<strong>新闻传播学类</strong>专业，同时还在修读<strong>人机传播微专业</strong>！🎓
+
+---
+- 想知道这个学院的优势在哪里吗？
+- 要了解我的专业技能吗？`;
+            }
+            
+            if (q.includes('专业')) {
+                return `我读的是<strong>新闻传播学类</strong>专业～
+
+同时还在修读<strong>人机传播微专业</strong>，课程很有趣！📚
+
+---
+- 想知道这个学院的优势吗？
+- 要看看我的专业技能吗？`;
+            }
+            
+            if (q.includes('学院') || q.includes('优势')) {
+                return `<strong>深圳大学传播学院</strong>是全国新闻传播强院～
+
+1. 学科排名并列全国<strong>第12名</strong>、广东省<strong>第2名</strong>
+2. 拥有"本科-硕士-博士-博士后"完整人才培养全链条
+3. 三个本科专业全部获批<strong>国家级一流本科专业</strong>建设点
+
+---
+- 想知道我的专业技能吗？
+- 要了解我的兴趣爱好吗？`;
+            }
+            
+            if ((q.includes('seventeen') || q.includes('十七')) && (q.includes('为什么') || q.includes('喜欢'))) {
+                return `喜欢<strong>SEVENTEEN</strong>真的不是随便说说～
+
+1. <strong>实力强到离谱</strong>，刀群舞整齐到像复制粘贴，全员能唱能跳能创作
+2. <strong>团魂真的太戳人</strong>，13个人像家人一样自然舒服
+3. <strong>努力又清醒</strong>，明明已经很厉害了却依旧谦虚努力
+
+看着他们，生活都变得更有动力啦～ 💎
+
+---
+- 想知道我的粉丝运营经历吗？
+- 要了解我的兴趣爱好吗？`;
+            }
+            
+            if (q.includes('seventeen') || q.includes('粉丝运营') || q.includes('韩娱')) {
+                return `我连续<strong>4年深度活跃</strong>（2022年至今），主推SEVENTEEN～
+
+全程跟进团体发展、内容更新与线下活动，曾担任<strong>广州、深圳线下观影应援活动</strong>策划，单场最高参与人数<strong>300+</strong>！📊
+
+---
+- 想知道我为什么喜欢SEVENTEEN吗？
+- 要了解我的F1相关经历吗？`;
+            }
+            
+            if (q.includes('f1') || q.includes('赛车')) {
+                return `我连续<strong>2年深度活跃</strong>（2025年至今）～
+
+跟进2025-2026赛季全分站正赛、排位赛、冲刺赛，刷Netflix《Drive to Survive》纪录片，对<strong>体育IP跨媒介内容运营</strong>有完整认知！🏎️
+
+---
+- 想了解我的女性向游戏经历吗？
+- 要看看我的专业技能吗？`;
+            }
+            
+            if (q.includes('游戏') || q.includes('代号鸢') || q.includes('绘旅人') || q.includes('网文') || q.includes('漫画')) {
+                return `我连续<strong>6年深度活跃</strong>（2020年至今）～
+
+深耕《代号鸢》《时空中的绘旅人》等女性向游戏，累计阅读完本女性向网文<strong>超300部</strong>，对<strong>女性用户内容需求、情感痛点</strong>有极致洞察！🎮
+
+---
+- 想知道我的专业技能吗？
+- 要了解我的F1相关经历吗？`;
+            }
+            
+            if (q.includes('专业技能') || q.includes('技能') || q.includes('aigc')) {
+                return `我掌握这些专业技能哦～
+
+1. <strong>文案创作</strong>
+2. <strong>AIGC辅助创作</strong>
+3. <strong>网页制作</strong>
+
+正在用AI把热爱变成可落地的传播作品！💪
+
+---
+- 想了解我的兴趣爱好吗？
+- 要看看我的SEVENTEEN相关经历吗？`;
+            }
+            
+            if (q.includes('兴趣爱好') || q.includes('爱好')) {
+                return `我的兴趣爱好很丰富哦～
+
+1. <strong>Kpop运营</strong>
+2. <strong>游戏剧情拆解</strong>
+3. <strong>F1赛事复盘</strong>
+4. 探索AI工具的各种玩法
+
+正在用AI把热爱落地！🌟
+
+---
+- 想知道我的SEVENTEEN相关经历吗？
+- 要了解我的F1相关经历吗？`;
+            }
+            
+            return `我是<strong>丘子淇</strong>，深大传院大一学生～
+
+欢迎问我更多问题哦！ 😊
+
+---
+- 想了解我的SEVENTEEN相关经历吗？
+- 要看看我的专业技能吗？
+- 想知道我的兴趣爱好吗？`;
+        }
+
+        // =============================================
+        // 对话状态管理
+        // =============================================
+        let conversationHistory = [];
+        let isTyping = false;
+
+        // =============================================
+        // 发送消息
+        // =============================================
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message || isTyping) return;
+            
+            addMessage(message, 'user');
+            input.value = '';
+            autoResize(input);
+            
+            showTypingIndicator();
+            generateResponse(message);
+        }
+
+        function sendQuickMessage(message) {
+            if (isTyping) return;
+            
+            addMessage(message, 'user');
+            showTypingIndicator();
+            generateResponse(message);
+        }
+
+        function addMessage(text, role) {
+            const container = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = text;
+            
+            messageDiv.appendChild(bubble);
+            container.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function showTypingIndicator() {
+            isTyping = true;
+            const container = document.getElementById('messagesContainer');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typingIndicator';
+            typingDiv.className = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            container.appendChild(typingDiv);
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+            isTyping = false;
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('messagesContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function generateResponse(userMessage) {
+            conversationHistory.push({ role: 'user', content: userMessage });
+            
+            try {
+                console.log('正在调用API...');
+                console.log('API_URL:', API_URL);
+                console.log('API_KEY存在:', !!API_KEY);
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'doubao-seed-2-0-pro-260215',
+                        messages: [
+                            { role: 'system', content: SYSTEM_PROMPT },
+                            ...conversationHistory
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1000
+                    })
+                });
+
+                console.log('API响应状态:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API错误响应:', errorText);
+                    throw new Error(`API请求失败: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('API返回数据:', data);
+                const aiResponse = data.choices[0].message.content;
+                
+                hideTypingIndicator();
+                addMessageWithTyping(aiResponse);
+                conversationHistory.push({ role: 'assistant', content: aiResponse });
+                
+            } catch (error) {
+                console.error('API调用错误:', error);
+                hideTypingIndicator();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                const mockResponse = getMockResponse(userMessage);
+                addMessageWithTyping(mockResponse);
+                conversationHistory.push({ role: 'assistant', content: mockResponse });
+            }
+        }
+
+        function addMessageWithTyping(text) {
+            const container = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            
+            messageDiv.appendChild(bubble);
+            container.appendChild(messageDiv);
+            scrollToBottom();
+            
+            function parseHTMLToType(html) {
+                const result = [];
+                let i = 0;
+                while (i < html.length) {
+                    if (html[i] === '<') {
+                        let tagEnd = html.indexOf('>', i);
+                        if (tagEnd !== -1) {
+                            result.push({ type: 'tag', content: html.substring(i, tagEnd + 1) });
+                            i = tagEnd + 1;
+                        } else {
+                            result.push({ type: 'char', content: html[i] });
+                            i++;
+                        }
+                    } else {
+                        result.push({ type: 'char', content: html[i] });
+                        i++;
+                    }
+                }
+                return result;
+            }
+            
+            const tokens = parseHTMLToType(text);
+            let index = 0;
+            let currentHTML = '';
+            
+            const typeInterval = setInterval(() => {
+                if (index < tokens.length) {
+                    const token = tokens[index];
+                    currentHTML += token.content;
+                    bubble.innerHTML = currentHTML;
+                    index++;
+                    scrollToBottom();
+                } else {
+                    clearInterval(typeInterval);
+                }
+            }, 15);
+        }
+
+        // =============================================
+        // 输入框自动调整高度
+        // =============================================
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        // =============================================
+        // 键盘事件处理
+        // =============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initButtonText();
+            
+            const chatInput = document.getElementById('chatInput');
+            
+            chatInput.addEventListener('input', () => {
+                autoResize(chatInput);
+            });
+            
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('welcomeModal');
+                    if (!modal.classList.contains('hidden')) {
+                        handleGenerateClick();
+                    }
+                }
+            });
+
+            // 快捷按钮鼠标光晕效果
+            document.querySelectorAll('.quick-btn').forEach(btn => {
+                btn.addEventListener('mousemove', (e) => {
+                    const rect = btn.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    btn.style.setProperty('--x', x + 'px');
+                    btn.style.setProperty('--y', y + 'px');
+                });
+            });
+        });
+
+        // =============================================
+        // AI功能按钮
+        // =============================================
+        function generateResumeSummary() {
+            sendQuickMessage('请生成一份我的完整简历摘要');
+        }
+
+        function generatePortfolioAnalysis() {
+            sendQuickMessage('请解读一下我的作品和经历');
+        }
+
+        // =============================================
+        // 留言打字机应用
+        // =============================================
+        let cardCounter = 0;
+        let draggedCard = null;
+        let dragOffset = { x: 0, y: 0 };
+
+        function clearTypewriter() {
+            document.getElementById('typewriterInput').value = '';
+        }
+
+        function printMessage() {
+            const input = document.getElementById('typewriterInput');
+            const message = input.value.trim();
+            
+            if (!message) {
+                alert('请先输入一些内容哦～');
+                return;
+            }
+
+            createPagerCard(message);
+            input.value = '';
+        }
+
+        function createPagerCard(message) {
+            const cardsArea = document.getElementById('cardsArea');
+            cardCounter++;
+
+            const card = document.createElement('div');
+            card.className = 'pager-card';
+            
+            // 随机位置和角度
+            const randomLeft = 20 + Math.random() * 100;
+            const randomTop = 20 + cardCounter * 25;
+            const randomAngle = (Math.random() - 0.5) * 12; // -6度到+6度之间的随机角度
+            
+            card.style.left = randomLeft + 'px';
+            card.style.top = randomTop + 'px';
+            card.style.transform = `rotate(${randomAngle}deg)`;
+            card.dataset.rotate = randomAngle;
+            card.style.zIndex = cardCounter;
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            const idStr = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+            card.innerHTML = `
+                <div class="pager-header">
+                    <span class="pager-title">PAGER MESSAGE</span>
+                    <button class="pager-close" onclick="removeCard(this)">×</button>
+                </div>
+                <div class="pager-meta">
+                    ID: ${idStr} &nbsp;&nbsp; ${dateStr} ${timeStr}
+                </div>
+                <div class="pager-content" id="content-${cardCounter}"></div>
+                <div class="pager-footer">
+                    END OF TRANSMISSION
+                </div>
+            `;
+
+            cardsArea.appendChild(card);
+
+            // 打字效果
+            typeWriterEffect(message, document.getElementById(`content-${cardCounter}`));
+
+            // 添加拖拽功能
+            addDragFunctionality(card);
+        }
+
+        function typeWriterEffect(text, element) {
+            let index = 0;
+            element.innerHTML = '<span class="typing-cursor"></span>';
+            
+            function type() {
+                if (index < text.length) {
+                    element.innerHTML = text.substring(0, index + 1) + '<span class="typing-cursor"></span>';
+                    index++;
+                    setTimeout(type, 80 + Math.random() * 50);
+                } else {
+                    element.innerHTML = text;
+                }
+            }
+            
+            type();
+        }
+
+        function removeCard(closeBtn) {
+            const card = closeBtn.closest('.pager-card');
+            card.style.transform = 'scale(0.8) rotate(10deg)';
+            card.style.opacity = '0';
+            setTimeout(() => card.remove(), 300);
+        }
+
+        function addDragFunctionality(card) {
+            // 悬停效果
+            card.addEventListener('mouseenter', () => {
+                const rotate = card.dataset.rotate || 0;
+                card.style.transform = `rotate(${rotate}deg) scale(1.03)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                const rotate = card.dataset.rotate || 0;
+                card.style.transform = `rotate(${rotate}deg)`;
+            });
+            
+            card.addEventListener('mousedown', (e) => {
+                if (e.target.classList.contains('pager-close')) return;
+                
+                draggedCard = card;
+                const rect = card.getBoundingClientRect();
+                dragOffset.x = e.clientX - rect.left;
+                dragOffset.y = e.clientY - rect.top;
+                
+                card.classList.add('dragging');
+                card.style.zIndex = ++cardCounter;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!draggedCard) return;
+                
+                const cardsArea = document.getElementById('cardsArea');
+                const areaRect = cardsArea.getBoundingClientRect();
+                
+                let newX = e.clientX - areaRect.left - dragOffset.x;
+                let newY = e.clientY - areaRect.top - dragOffset.y;
+                
+                // 限制在区域内
+                newX = Math.max(0, Math.min(newX, areaRect.width - draggedCard.offsetWidth));
+                newY = Math.max(0, Math.min(newY, areaRect.height - draggedCard.offsetHeight));
+                
+                draggedCard.style.left = newX + 'px';
+                draggedCard.style.top = newY + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (draggedCard) {
+                    draggedCard.classList.remove('dragging');
+                    draggedCard = null;
+                }
+            });
+
+            // 触摸支持
+            card.addEventListener('touchstart', (e) => {
+                if (e.target.classList.contains('pager-close')) return;
+                
+                draggedCard = card;
+                const rect = card.getBoundingClientRect();
+                const touch = e.touches[0];
+                dragOffset.x = touch.clientX - rect.left;
+                dragOffset.y = touch.clientY - rect.top;
+                
+                card.classList.add('dragging');
+                card.style.zIndex = ++cardCounter;
+            });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!draggedCard) return;
+                
+                const cardsArea = document.getElementById('cardsArea');
+                const areaRect = cardsArea.getBoundingClientRect();
+                const touch = e.touches[0];
+                
+                let newX = touch.clientX - areaRect.left - dragOffset.x;
+                let newY = touch.clientY - areaRect.top - dragOffset.y;
+                
+                newX = Math.max(0, Math.min(newX, areaRect.width - draggedCard.offsetWidth));
+                newY = Math.max(0, Math.min(newY, areaRect.height - draggedCard.offsetHeight));
+                
+                draggedCard.style.left = newX + 'px';
+                draggedCard.style.top = newY + 'px';
+            });
+
+            document.addEventListener('touchend', () => {
+                if (draggedCard) {
+                    draggedCard.classList.remove('dragging');
+                    draggedCard = null;
+                }
+            });
+        }
+
+        // =============================================
+        // 超光速粒子背景
+        // =============================================
+        (function initHyperspeedBackground() {
+            const canvas = document.getElementById('hyperspeed-canvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            const particleCount = 800;
+            let centerX, centerY;
+            
+            // SEVENTEEN 粉蓝色配色
+            const colors = [
+                'rgba(247, 202, 201, 0.9)',   // 粉水晶
+                'rgba(146, 168, 209, 0.9)',   // 宁静蓝
+                'rgba(255, 255, 255, 0.8)',   // 白色
+                'rgba(247, 202, 201, 0.6)',   // 半透明粉
+                'rgba(146, 168, 209, 0.6)'    // 半透明蓝
+            ];
+            
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+                
+                reset() {
+                    this.x = (Math.random() - 0.5) * canvas.width * 2;
+                    this.y = (Math.random() - 0.5) * canvas.height * 2;
+                    this.z = Math.random() * 2000 + 500;
+                    this.pz = this.z;
+                    this.speed = Math.random() * 5 + 2;
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                    this.size = Math.random() * 2 + 0.5;
+                }
+                
+                update() {
+                    this.pz = this.z;
+                    this.z -= this.speed;
+                    
+                    if (this.z < 1) {
+                        this.reset();
+                    }
+                }
+                
+                draw() {
+                    const sx = (this.x / this.z) * 500 + centerX;
+                    const sy = (this.y / this.z) * 500 + centerY;
+                    const px = (this.x / this.pz) * 500 + centerX;
+                    const py = (this.y / this.pz) * 500 + centerY;
+                    
+                    const size = (1 - this.z / 2500) * this.size * 3;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(px, py);
+                    ctx.lineTo(sx, sy);
+                    ctx.strokeStyle = this.color;
+                    ctx.lineWidth = size;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, size * 0.5, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+            }
+            
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                centerX = canvas.width / 2;
+                centerY = canvas.height / 2;
+            }
+            
+            function init() {
+                resize();
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push(new Particle());
+                }
+            }
+            
+            function animate() {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                for (let particle of particles) {
+                    particle.update();
+                    particle.draw();
+                }
+                
+                requestAnimationFrame(animate);
+            }
+            
+            window.addEventListener('resize', resize);
+            init();
+            animate();
+        })();
+    </script>
+</body>
+</html>
