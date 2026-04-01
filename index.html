@@ -989,11 +989,13 @@
             height: 100%;
             background: linear-gradient(
                 90deg,
-                transparent,
-                rgba(255, 255, 255, 0.4),
-                transparent
+                transparent 0%,
+                rgba(247, 202, 201, 0.6) 30%,
+                rgba(146, 168, 209, 0.6) 50%,
+                rgba(247, 202, 201, 0.6) 70%,
+                transparent 100%
             );
-            animation: glowSlide 2s infinite;
+            animation: glowSlide 1.5s linear infinite;
             z-index: 1;
             pointer-events: none;
         }
@@ -1004,13 +1006,13 @@
             inset: 0;
             background: radial-gradient(
                 ellipse at top left,
-                rgba(247, 202, 201, 0.5) 0%,
-                transparent 50%
+                rgba(247, 202, 201, 0.8) 0%,
+                transparent 60%
             ),
             radial-gradient(
                 ellipse at bottom right,
-                rgba(146, 168, 209, 0.5) 0%,
-                transparent 50%
+                rgba(146, 168, 209, 0.8) 0%,
+                transparent 60%
             );
             pointer-events: none;
             z-index: 1;

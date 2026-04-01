@@ -7,3 +7,10 @@
 
 # 其他不需要的文件
 *.log
+*.txt
+*.md
+*.spec
+particle-star.html
+particle-star.css
+particle-star.js
+background/
